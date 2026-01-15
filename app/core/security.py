@@ -2,9 +2,7 @@ from datetime import datetime, timedelta, timezone
 from typing import Any, Union
 import jwt
 from pwdlib import PasswordHash
-from app.core.config import settings
 
-# pwdlib generic interface
 password_hash = PasswordHash.recommended()
 
 ALGORITHM = "HS256"
