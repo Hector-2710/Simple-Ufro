@@ -25,3 +25,10 @@ class UserCreate(UserBase):
 
 class UserRead(UserBase):
     id: uuid.UUID
+
+class UserUpdate(SQLModel):
+    full_name: Optional[str] = None
+    email: Optional[str] = None
+    password: Optional[str] = None
+    is_active: Optional[bool] = None
+
