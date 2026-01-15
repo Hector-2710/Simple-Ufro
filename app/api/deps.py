@@ -6,7 +6,7 @@ from pydantic import ValidationError
 from sqlmodel import select
 from app.core import security
 from app.models.user import User
-from app.schemas import TokenPayload
+from app.schemas.token import TokenPayload
 from app.db.session import SessionDep
 from typing import Annotated
 
