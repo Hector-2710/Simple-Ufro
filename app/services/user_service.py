@@ -3,6 +3,7 @@ from sqlmodel import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.models.user import User, UserCreate, UserUpdate
 from app.core import security
+from app.core.exceptions import UserAlreadyExistsError, InvalidCredentialsError
 
 class UserService:
     @staticmethod
@@ -15,13 +16,17 @@ class UserService:
     async def authenticate(session: AsyncSession, email: str, password: str) -> Optional[User]:
         user = await UserService.get_by_email(session, email)
         if not user:
-            return None
+            raise InvalidCredentialsError()
         if not security.verify_password(password, user.hashed_password):
-            return None
+            raise InvalidCredentialsError()
         return user
 
     @staticmethod
     async def create(session: AsyncSession, user_in: UserCreate) -> User:
+        existing_user = await UserService.get_by_email(session, user_in.email)
+        if existing_user:
+            raise UserAlreadyExistsError(user_in.email)
+
         db_user = User.model_validate(user_in, update={"hashed_password": security.get_password_hash(user_in.password)})
         session.add(db_user)
         await session.commit()

@@ -1,10 +1,10 @@
 from contextlib import asynccontextmanager
 from fastapi import FastAPI
-from sqlmodel import text
 from app.core.config import settings
-from app.db.session import init_db, engine
-import redis.asyncio as redis
+from app.db.session import init_db
 from app.api.api import api_router
+from app.core import exceptions
+from app.api import handlers
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -17,34 +17,9 @@ app = FastAPI(
     version="1.0.0"
 )
 
+app.add_exception_handler(exceptions.UserAlreadyExistsError, handlers.user_already_exists_handler)
+app.add_exception_handler(exceptions.InvalidCredentialsError, handlers.invalid_credentials_handler)
+app.add_exception_handler(exceptions.UserNotFoundError, handlers.user_not_found_handler)
+
 app.include_router(api_router, prefix="/api/v1")
 
-@app.get("/")
-async def root():
-    return {"message": "Welcome to the Next Gen University Intranet API"}
-
-@app.get("/health")
-async def health_check():
-    db_status = "down"
-    try:
-        async with engine.connect() as conn:
-            await conn.execute(text("SELECT 1"))
-        db_status = "up"
-    except Exception as e:
-        print(f"DB Error: {e}")
-
-    redis_status = "down"
-    try:
-        r = redis.from_url(settings.REDIS_URL)
-        await r.ping()
-        await r.close()
-        redis_status = "up"
-    except Exception as e:
-        print(f"Redis Error: {e}")
-
-    return {
-        "status": "ok",
-        "database": db_status,
-        "redis": redis_status,
-        "version": "1.0.0"
-    }

@@ -8,13 +8,9 @@ router = APIRouter()
 
 @router.post("/", response_model=UserRead)
 async def create_user(session: SessionDep, user_in: UserCreate) -> Any:
-    user = await user_service.get_by_email(session, user_in.email)
-    if user:
-        raise HTTPException(
-            status_code=400,
-            detail="The user with this username already exists in the system",
-        )
-    
+    """
+    Create new user.
+    """
     user = await user_service.create(session, user_in)
     return user
 
