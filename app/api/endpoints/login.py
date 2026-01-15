@@ -14,12 +14,6 @@ router = APIRouter()
 async def login_access_token(session: SessionDep,form_data: OAuth2PasswordRequestForm = Depends()) -> Any:
     user = await user_service.authenticate(session, email=form_data.username, password=form_data.password)
     
-    if not user:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Incorrect email or password"
-        )
-    
     if not user.is_active:
         raise HTTPException(status_code=400, detail="Inactive user")
 
@@ -28,3 +22,4 @@ async def login_access_token(session: SessionDep,form_data: OAuth2PasswordReques
         "access_token": security.create_access_token(user.id, expires_delta=access_token_expires),
         "token_type": "bearer",
     }
+    
