@@ -1,18 +1,15 @@
 from contextlib import asynccontextmanager
 from fastapi import FastAPI
-from sqlmodel import select, text
+from sqlmodel import text
 from app.core.config import settings
 from app.db.session import init_db, engine
 import redis.asyncio as redis
-# Import models to register them with metadata
-from app.models import User, Subject, Grade, Schedule
+from app.api.api import api_router
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    # Startup: Create tables
     await init_db()
     yield
-    # Shutdown
 
 app = FastAPI(
     title=settings.PROJECT_NAME,
@@ -20,13 +17,14 @@ app = FastAPI(
     version="1.0.0"
 )
 
+app.include_router(api_router, prefix="/api/v1")
+
 @app.get("/")
 async def root():
     return {"message": "Welcome to the Next Gen University Intranet API"}
 
 @app.get("/health")
 async def health_check():
-    # Check DB Connection
     db_status = "down"
     try:
         async with engine.connect() as conn:
@@ -35,7 +33,6 @@ async def health_check():
     except Exception as e:
         print(f"DB Error: {e}")
 
-    # Check Redis Connection
     redis_status = "down"
     try:
         r = redis.from_url(settings.REDIS_URL)
