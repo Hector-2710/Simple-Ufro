@@ -19,3 +19,9 @@ async def user_not_found_handler(request: Request, exc: exceptions.UserNotFoundE
         status_code=status.HTTP_404_NOT_FOUND,
         content={"detail": "User not found"},
     )
+
+async def inactive_user_handler(request: Request, exc: exceptions.InactiveUserError):
+    return JSONResponse(
+        status_code=status.HTTP_400_BAD_REQUEST,
+        content={"detail": "Inactive user"},
+    )
