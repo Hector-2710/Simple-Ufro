@@ -20,6 +20,7 @@ app = FastAPI(
 app.add_exception_handler(exceptions.UserAlreadyExistsError, handlers.user_already_exists_handler)
 app.add_exception_handler(exceptions.InvalidCredentialsError, handlers.invalid_credentials_handler)
 app.add_exception_handler(exceptions.UserNotFoundError, handlers.user_not_found_handler)
+app.add_exception_handler(exceptions.InactiveUserError, handlers.inactive_user_handler)
 
 app.include_router(api_router, prefix="/api/v1")
 
