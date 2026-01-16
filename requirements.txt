@@ -1,0 +1,11 @@
+fastapi
+uvicorn[standard]
+sqlmodel
+asyncpg
+redis
+pydantic-settings
+python-multipart
+alembic
+# Security
+pyjwt
+pwdlib[argon2]
