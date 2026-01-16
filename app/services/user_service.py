@@ -13,15 +13,6 @@ class UserService:
         return result.scalars().first()
 
     @staticmethod
-    async def authenticate(session: AsyncSession, email: str, password: str) -> Optional[User]:
-        user = await UserService.get_by_email(session, email)
-        if not user:
-            raise InvalidCredentialsError()
-        if not security.verify_password(password, user.hashed_password):
-            raise InvalidCredentialsError()
-        return user
-
-    @staticmethod
     async def create(session: AsyncSession, user_in: UserCreate) -> User:
         existing_user = await UserService.get_by_email(session, user_in.email)
         if existing_user:
