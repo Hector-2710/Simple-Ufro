@@ -10,7 +10,7 @@ from app.schemas.token import TokenPayload
 from app.db.session import SessionDep
 from typing import Annotated
 
-reusable_oauth2 = OAuth2PasswordBearer(tokenUrl="/api/v1/login/access-token")
+reusable_oauth2 = OAuth2PasswordBearer(tokenUrl="/api/v1/access-token")
 
 async def get_current_user(session: SessionDep, token: str = Depends(reusable_oauth2)) -> User:
     try:
