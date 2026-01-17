@@ -5,11 +5,14 @@ from app.db.session import init_db
 from app.api.api import api_router
 from app.core import exceptions
 from app.api import handlers
+from app.core.cache import cache
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     await init_db()
+    await cache.connect()
     yield
+    await cache.close()
 
 app = FastAPI(
     title=settings.PROJECT_NAME,
