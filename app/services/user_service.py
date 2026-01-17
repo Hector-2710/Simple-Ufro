@@ -1,9 +1,9 @@
 from typing import Optional
 from sqlmodel import select
 from sqlalchemy.ext.asyncio import AsyncSession
-from app.models.user import User, UserCreate, UserUpdate
+from app.models.user import User, UserCreate, UserUpdate, UserRead
 from app.core import security
-from app.core.exceptions import UserAlreadyExistsError, InvalidCredentialsError
+from app.core.exceptions import UserAlreadyExistsError
 
 class UserService:
     @staticmethod
@@ -13,7 +13,7 @@ class UserService:
         return result.scalars().first()
 
     @staticmethod
-    async def create(session: AsyncSession, user_in: UserCreate) -> User:
+    async def create(session: AsyncSession, user_in: UserCreate) -> UserRead:
         existing_user = await UserService.get_by_email(session, user_in.email)
         if existing_user:
             raise UserAlreadyExistsError(user_in.email)
