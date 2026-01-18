@@ -6,7 +6,7 @@ from datetime import datetime, time, date
 # Add the project root to the python path
 sys.path.append(os.getcwd())
 
-from sqlmodel import select, delete
+from sqlmodel import select, delete, SQLModel
 from app.db.session import engine, init_db
 from app.models.user import User, Role
 from app.models.academic import Subject, Grade, Schedule
@@ -17,8 +17,10 @@ from sqlalchemy.orm import sessionmaker
 async def seed_data():
     print("🌱 Starting data seeding...")
     
-    # Init DB (ensure tables exist)
-    await init_db()
+    # Init DB (ensure tables exist and schema is updated)
+    async with engine.begin() as conn:
+        await conn.run_sync(SQLModel.metadata.drop_all)
+        await conn.run_sync(SQLModel.metadata.create_all)
 
     async_session = sessionmaker(
         engine, class_=AsyncSession, expire_on_commit=False
@@ -39,6 +41,7 @@ async def seed_data():
         
         student1 = User(
             email="student@ufro.cl",
+            username="student1",
             full_name="Juan Perez",
             hashed_password=student_password,
             role=Role.STUDENT
@@ -46,6 +49,7 @@ async def seed_data():
         
         student2 = User(
             email="ana@ufro.cl",
+            username="student2",
             full_name="Ana Garcia",
             hashed_password=student_password,
             role=Role.STUDENT
