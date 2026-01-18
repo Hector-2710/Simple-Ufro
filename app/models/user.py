@@ -10,6 +10,7 @@ class Role(str, Enum):
 
 class UserBase(SQLModel):
     email: str = Field(unique=True, index=True)
+    username: str = Field(unique=True, index=True)
     full_name: str
     role: Role = Field(default=Role.STUDENT)
     is_active: bool = True

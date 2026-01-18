@@ -7,8 +7,13 @@ from app.schemas.token import Token
 
 class AuthService:
     @staticmethod
-    async def login(session: AsyncSession, email: str, password: str) -> Token:
-        user = await user_service.get_by_email(session, email)
+    async def login(session: AsyncSession, identifier: str, password: str) -> Token:
+        # Check by email first
+        user = await user_service.get_by_email(session, identifier)
+        if not user:
+            # Then check by username
+            user = await user_service.get_by_username(session, identifier)
+            
         if not user:
             raise InvalidCredentialsError()
         if not security.verify_password(password, user.hashed_password):

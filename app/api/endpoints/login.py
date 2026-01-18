@@ -10,4 +10,4 @@ router = APIRouter()
 
 @router.post("/access-token", response_model=Token)
 async def login_access_token(session: SessionDep, form_data: OAuth2PasswordRequestForm = Depends()) -> Any:
-    return await auth_service.login(session, email=form_data.username, password=form_data.password)
+    return await auth_service.login(session, identifier=form_data.username, password=form_data.password)
