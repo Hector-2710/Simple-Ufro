@@ -30,7 +30,7 @@ export const AuthProvider = ({ children }) => {
             params.append('username', username);
             params.append('password', password);
 
-            const response = await api.post('/access-token', params, {
+            const response = await api.post('login/access-token', params, {
                 headers: { 'Content-Type': 'application/x-www-form-urlencoded' }
             });
 
