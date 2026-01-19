@@ -1,4 +1,6 @@
 import os
+os.environ["DATABASE_URL"] = "postgresql+asyncpg://user:pass@localhost/db"
+os.environ["REDIS_URL"] = "redis://localhost:6379"
 import asyncio
 import pytest
 from httpx import AsyncClient
@@ -11,8 +13,6 @@ from app.core.cache import cache
 from unittest.mock import AsyncMock
 from httpx import AsyncClient, ASGITransport
 
-os.environ["DATABASE_URL"] = "postgresql+asyncpg://user:pass@localhost/db"
-os.environ["REDIS_URL"] = "redis://localhost:6379"
 TEST_SQLALCHEMY_DATABASE_URL = "sqlite+aiosqlite:///:memory:"
 
 engine_test = create_async_engine(TEST_SQLALCHEMY_DATABASE_URL, future=True)
