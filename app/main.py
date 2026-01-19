@@ -6,6 +6,7 @@ from app.api.api import api_router
 from app.core import exceptions
 from app.api import handlers
 from app.core.cache import cache
+from fastapi.middleware.cors import CORSMiddleware
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -18,6 +19,15 @@ app = FastAPI(
     title=settings.PROJECT_NAME,
     lifespan=lifespan,
     version="1.0.0"
+)
+
+# Set all CORS enabled origins
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:5173", "http://localhost:3000"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
 )
 
 app.add_exception_handler(exceptions.UserAlreadyExistsError, handlers.user_already_exists_handler)
