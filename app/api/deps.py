@@ -10,6 +10,7 @@ from app.schemas.token import TokenPayload
 from app.db.session import SessionDep
 from typing import Annotated
 from app.core.exceptions import InvalidCredentialsError
+import uuid
 
 reusable_oauth2 = OAuth2PasswordBearer(tokenUrl="/api/v1/access-token")
 
@@ -19,10 +20,12 @@ async def get_current_user(session: SessionDep, token: str = Depends(reusable_oa
             token, security.SECRET_KEY, algorithms=[security.ALGORITHM]
         )
         token_data = TokenPayload(**payload)
-    except (InvalidTokenError, ValidationError):
+        if not token_data.sub:
+            raise InvalidCredentialsError()
+    except (InvalidTokenError, ValidationError, ValueError):
         raise InvalidCredentialsError()
     
-    statement = select(User).where(User.id == token_data.sub)
+    statement = select(User).where(User.id == uuid.UUID(token_data.sub))
     result = await session.execute(statement)
     user = result.scalars().first()
     
