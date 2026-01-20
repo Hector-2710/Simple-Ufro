@@ -9,3 +9,4 @@ alembic
 # Security
 pyjwt
 pwdlib[argon2]
+faker
