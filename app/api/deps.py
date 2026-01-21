@@ -10,6 +10,7 @@ from app.schemas.token import TokenPayload
 from app.db.session import SessionDep
 from typing import Annotated
 from app.core.exceptions import InvalidCredentialsError
+from app.services.user_service import user_service
 import uuid
 
 reusable_oauth2 = OAuth2PasswordBearer(tokenUrl="/api/v1/access-token")
@@ -25,9 +26,7 @@ async def get_current_user(session: SessionDep, token: str = Depends(reusable_oa
     except (InvalidTokenError, ValidationError, ValueError):
         raise InvalidCredentialsError()
     
-    statement = select(User).where(User.id == uuid.UUID(token_data.sub))
-    result = await session.execute(statement)
-    user = result.scalars().first()
+    user = await user_service.get_by_id(session, uuid.UUID(token_data.sub))
     
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
