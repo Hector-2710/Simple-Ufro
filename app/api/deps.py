@@ -1,17 +1,17 @@
-from fastapi import Depends, HTTPException
+from fastapi import Depends, HTTPException, Request
 from fastapi.security import OAuth2PasswordBearer
 import jwt
 from jwt.exceptions import InvalidTokenError
 from pydantic import ValidationError
-from sqlmodel import select
 from app.core import security
-from app.models.user import UserRead, User
+from app.models.user import UserRead
 from app.schemas.token import TokenPayload
 from app.db.session import SessionDep
 from typing import Annotated
-from app.core.exceptions import InvalidCredentialsError
+from app.core.exceptions import InvalidCredentialsError, RateLimitError
 from app.services.user_service import user_service
 import uuid
+from app.core.cache import cache
 
 reusable_oauth2 = OAuth2PasswordBearer(tokenUrl="/api/v1/access-token")
 
@@ -35,3 +35,18 @@ async def get_current_user(session: SessionDep, token: str = Depends(reusable_oa
     return user
 
 GetCurrentUser = Annotated[UserRead, Depends(get_current_user)]
+
+class RateLimiter:
+    def __init__(self, times: int = 5, seconds: int = 60):
+        self.times = times
+        self.seconds = seconds
+
+    async def __call__(self, request: Request):
+        ip = request.client.host
+        key = f"rate_limit:{request.url.path}:{ip}"
+        
+        is_allowed = await cache.check_rate_limit(key, self.times, self.seconds)
+        if not is_allowed:
+            raise RateLimitError()
+
+LoginRateLimit = Annotated[None, Depends(RateLimiter(times=5, seconds=60))]
