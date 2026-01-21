@@ -10,3 +10,6 @@ class UserNotFoundError(Exception):
 
 class InactiveUserError(Exception):
     pass
+
+class RateLimitError(Exception):
+    pass

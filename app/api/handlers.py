@@ -25,3 +25,9 @@ async def inactive_user_handler(request: Request, exc: exceptions.InactiveUserEr
         status_code=status.HTTP_400_BAD_REQUEST,
         content={"detail": "Inactive user"},
     )
+
+async def rate_limit_handler(request: Request, exc: exceptions.RateLimitError):
+    return JSONResponse(
+        status_code=status.HTTP_429_TOO_MANY_REQUESTS,
+        content={"detail": "Too many requests. Please try again later."},
+    )
