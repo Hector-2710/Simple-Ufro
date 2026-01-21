@@ -12,22 +12,13 @@ class AcademicService:
     @staticmethod
     async def get_student_grades(session: AsyncSession, student_id: UUID) -> List[GradeRead]:
         key = f"grades:{student_id}"
-        
-        start_cache = time.time()
         cached_data = await cache.get(key)
-        end_cache = time.time()
-        
         if cached_data:
-            print(f"⚡ CACHE HIT for {key} | Time: {end_cache - start_cache:.4f}s")
             return [GradeRead(**item) for item in cached_data]
 
-        start_db = time.time()
         statement = select(Grade).where(Grade.student_id == student_id).options(selectinload(Grade.subject))
         result = await session.execute(statement)
         grades = result.scalars().all()
-        end_db = time.time()
-        
-        print(f"🐢 DB QUERY for {key} | Time: {end_db - start_db:.4f}s")
         
         dtos = [
             GradeRead(
@@ -48,13 +39,30 @@ class AcademicService:
 
     @staticmethod
     async def get_student_subjects(session: AsyncSession, student_id: UUID) -> List[Subject]:
+        key = f"subjects:{student_id}"
+        
+        cached_data = await cache.get(key)
+        if cached_data:
+            return [Subject.model_validate(item) for item in cached_data]
+
         sub_query = select(Grade.subject_id).where(Grade.student_id == student_id).distinct()
         statement = select(Subject).where(col(Subject.id).in_(sub_query))
         result = await session.execute(statement)
-        return result.scalars().all()
+        subjects = result.scalars().all()
+        
+        if subjects:
+            await cache.set(key, [s.model_dump(mode='json') for s in subjects], ttl=300)
+            
+        return subjects
 
     @staticmethod
     async def get_student_schedule(session: AsyncSession, student_id: UUID) -> List[ScheduleRead]:
+        key = f"schedule:{student_id}"
+        
+        cached_data = await cache.get(key)
+        if cached_data:
+            return [ScheduleRead(**item) for item in cached_data]
+
         sub_query = select(Grade.subject_id).where(Grade.student_id == student_id).distinct()
         statement = select(Schedule).where(col(Schedule.subject_id).in_(sub_query)).options(selectinload(Schedule.subject))
         result = await session.execute(statement)
@@ -71,6 +79,9 @@ class AcademicService:
                 subject_code=s.subject.code
             ) for s in schedules
         ]
+        
+        if dtos:
+            await cache.set(key, [dto.model_dump(mode='json') for dto in dtos], ttl=300)
             
         return dtos
 
