@@ -33,4 +33,15 @@ class CacheManager:
             return
         await cls.client.set(key, json.dumps(value), ex=ttl)
 
+    @classmethod
+    async def check_rate_limit(cls, key: str, limit: int, window: int) -> bool:
+        if not cls.client:
+            return True
+        
+        current = await cls.client.incr(key)
+        if current == 1:
+            await cls.client.expire(key, window)
+            
+        return current <= limit
+
 cache = CacheManager()
